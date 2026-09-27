@@ -27,6 +27,17 @@ class DomainRewriter {
   }
 }
 
+// 把上游响应的 Set-Cookie 转发到客户端：剥离 Domain/SameSite 限制，
+// 否则浏览器因域名不匹配（cookie 属 wenku8.net，当前域名是 Worker 域名）直接丢弃，登录态无法保存
+function forwardSetCookies(fromResp, toResp) {
+  const setCookies = fromResp.headers.getSetCookie ? fromResp.headers.getSetCookie() : [];
+  for (let raw of setCookies) {
+    raw = raw.replace(/;\s*Domain=[^;]+/gi, "");
+    raw = raw.replace(/;\s*SameSite=[^;]+/gi, "");
+    toResp.headers.append("Set-Cookie", raw);
+  }
+}
+
 export default {
   async fetch(request) {
     const proxyHost = new URL(request.url).host;
@@ -77,12 +88,7 @@ export default {
       }
 
       // 透传 Set-Cookie，剥离 Domain 限制
-      const setCookies = resp.headers.getSetCookie ? resp.headers.getSetCookie() : [];
-      for (let raw of setCookies) {
-        raw = raw.replace(/;\s*Domain=[^;]+/gi, "");
-        raw = raw.replace(/;\s*SameSite=[^;]+/gi, "");
-        newResp.headers.append("Set-Cookie", raw);
-      }
+      forwardSetCookies(resp, newResp);
 
       return newResp;
     }
@@ -96,7 +102,10 @@ export default {
       // HTMLRewriter.transform 返回的是流式 Response，需要重新包装以添加 CORS 头
       resp = new Response(resp.body, resp);
     } else {
-      resp = new Response(resp.body, resp);
+      const origResp = resp;
+      resp = new Response(origResp.body, origResp);
+      // 200 等非重定向响应同样可能携带 Set-Cookie，统一剥离限制后透传
+      forwardSetCookies(origResp, resp);
     }
     resp.headers.set("Access-Control-Allow-Origin", "*");
     resp.headers.set("Access-Control-Allow-Methods", "GET, POST, HEAD, OPTIONS");
