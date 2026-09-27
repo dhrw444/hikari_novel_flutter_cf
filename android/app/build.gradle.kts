@@ -19,8 +19,7 @@ android {
         applicationId = "pers.cyh128.hikari_novel"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        // cronet_http 要求 minSdk >= 24（其 android/build.gradle 固定 minSdkVersion 24）
-        minSdk = maxOf(flutter.minSdkVersion, 24)
+        minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName

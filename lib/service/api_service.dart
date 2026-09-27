@@ -1,14 +1,11 @@
-import 'dart:io' show Platform;
 import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:cookie_jar/cookie_jar.dart' as ckjar;
 import 'package:dio/dio.dart';
-import 'package:dio/io.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:enough_convert/enough_convert.dart';
 import 'package:get/get.dart' hide Response;
-import 'package:native_dio_adapter/native_dio_adapter.dart';
 import 'package:hikari_novel_flutter/common/constants.dart';
 import 'package:hikari_novel_flutter/common/extension.dart';
 import 'package:hikari_novel_flutter/models/common/charset_type.dart';
@@ -276,30 +273,10 @@ class ApiService extends GetxService {
   }
 }
 
-/// 统一构造 Dio 的底层网络适配器。
-///
-/// Dio 默认使用 dart:io 的 HttpClient（BoringSSL），其 TLS ClientHello（JA3/JA4）、
-/// HTTP/2 SETTINGS、header 顺序等与真实 Chromium 有本质差异。Cloudflare Bot Management
-/// 会据此把请求判定为非浏览器流量；而 cf_clearance 是绑定「IP + TLS 指纹 + User-Agent」
-/// 签发的，因此 WebView（真 Chromium）解出的通行证贴到 Dart 网络栈上必然失效。
-///
-/// 解法：Android/iOS 改用原生网络栈（Cronet / NSURLSession），使 TLS/HTTP2 指纹与
-/// 登录用的 WebView 同源，cf_clearance 才能真正复用。
-/// 无 Google Play 服务的设备由 createFallbackAdapter 兜底，不至于整体不可用。
-HttpClientAdapter createNativeHttpAdapter() {
-  if (Platform.isAndroid || Platform.isIOS) {
-    return NativeAdapter(
-      createFallbackAdapter: (error, stackTrace) => IOHttpClientAdapter(),
-    );
-  }
-  return IOHttpClientAdapter();
-}
-
 class _ApiClient {
   final ckjar.CookieJar _cookieJar = ckjar.CookieJar();
   late final Dio dio =
       Dio(BaseOptions(headers: kUserAgent, responseType: ResponseType.bytes, followRedirects: false, validateStatus: (status) => status != null))
-        ..httpClientAdapter = createNativeHttpAdapter()
         ..interceptors.add(_CloudflareInterceptor())
         ..interceptors.add(CookieManager(_cookieJar));
 
@@ -321,9 +298,7 @@ class _ApiClient {
 
   Future<Resource> getCommonData(String url) async {
     try {
-      final client = Dio(BaseOptions(headers: kUserAgent));
-      client.httpClientAdapter = createNativeHttpAdapter();
-      final response = await client.get(url);
+      final response = await Dio(BaseOptions(headers: kUserAgent)).get(url);
       return Success(response.data);
     } catch (e) {
       return Error(e.toString());
