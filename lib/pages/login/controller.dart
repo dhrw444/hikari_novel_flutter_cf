@@ -6,6 +6,7 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:get/get.dart';
 import 'package:hikari_novel_flutter/main.dart';
 import 'package:hikari_novel_flutter/models/common/wenku8_node.dart';
+import 'package:hikari_novel_flutter/models/common/cf_worker_node.dart';
 import 'package:hikari_novel_flutter/models/page_state.dart';
 import 'package:hikari_novel_flutter/common/constants.dart';
 import 'package:hikari_novel_flutter/router/route_path.dart';
@@ -41,7 +42,7 @@ class LoginController extends GetxController {
     showLoading.value = false;
 
     //存储cookie
-    if (uri.toString().contains("wenku8") == true) {
+    if (uri.toString().contains("wenku8") == true || CfWorkerNode.isRelayUri(uri)) {
       final getCookie = await cookieManager.getCookies(url: uri);
 
       bool hasCookie = ["jieqiUserInfo", "jieqiVisitInfo"].every(

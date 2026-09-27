@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hikari_novel_flutter/models/common/language.dart';
 import 'package:hikari_novel_flutter/models/common/wenku8_node.dart';
+import 'package:hikari_novel_flutter/models/common/cf_worker_node.dart';
 import 'package:hikari_novel_flutter/pages/setting/controller.dart';
 import 'package:hikari_novel_flutter/widgets/custom_tile.dart';
 import 'package:jiffy/jiffy.dart';
@@ -95,7 +96,7 @@ class SettingPage extends StatelessWidget {
                   showRadioListSheet(
                     context,
                     value: controller.wenku8Node.value,
-                    values: [(Wenku8Node.wwwWenku8Net, Wenku8Node.wwwWenku8Net.node), (Wenku8Node.wwwWenku8Cc, Wenku8Node.wwwWenku8Cc.node)],
+                    values: [(Wenku8Node.wwwWenku8Net, Wenku8Node.wwwWenku8Net.node), (Wenku8Node.wwwWenku8Cc, Wenku8Node.wwwWenku8Cc.node), (Wenku8Node.cfWorker, CfWorkerNode.displayName)],
                     title: "node".tr,
                   ).then((value) async {
                     if (value != null) controller.changeWenku8Node(value);

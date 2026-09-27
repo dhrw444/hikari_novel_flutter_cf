@@ -4,6 +4,7 @@ import 'package:hikari_novel_flutter/pages/welcome/controller.dart';
 import 'package:hikari_novel_flutter/router/route_path.dart';
 import 'package:hikari_novel_flutter/widgets/state_page.dart';
 import '../../models/common/wenku8_node.dart';
+import '../../models/common/cf_worker_node.dart';
 
 class WelcomePage extends StatelessWidget {
   WelcomePage({super.key});
@@ -42,6 +43,13 @@ class WelcomePage extends StatelessWidget {
                   child: Text(
                     Wenku8Node.wwwWenku8Cc.node,
                     style: controller.wenku8Node == Wenku8Node.wwwWenku8Cc ? TextStyle(color: primaryColor, fontWeight: FontWeight.bold) : null,
+                  ),
+                ),
+                PopupMenuItem<Wenku8Node>(
+                  value: Wenku8Node.cfWorker,
+                  child: Text(
+                    CfWorkerNode.displayName,
+                    style: controller.wenku8Node == Wenku8Node.cfWorker ? TextStyle(color: primaryColor, fontWeight: FontWeight.bold) : null,
                   ),
                 ),
               ],
