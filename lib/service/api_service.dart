@@ -276,7 +276,8 @@ class ApiService extends GetxService {
 class _ApiClient {
   final ckjar.CookieJar _cookieJar = ckjar.CookieJar();
   late final Dio dio =
-      Dio(BaseOptions(headers: kUserAgent, responseType: ResponseType.bytes, followRedirects: false, validateStatus: (status) => status != null))
+      Dio(BaseOptions(headers: kBrowserHeaders, responseType: ResponseType.bytes, followRedirects: false, validateStatus: (status) => status != null))
+        ..interceptors.add(_BrowserHeaderInterceptor())
         ..interceptors.add(_CloudflareInterceptor())
         ..interceptors.add(CookieManager(_cookieJar));
 
@@ -363,6 +364,19 @@ class _ApiClient {
       Log.e(e.toString());
       return Error(e.toString());
     }
+  }
+}
+
+/// 补全 Cloudflare 机器人判定所需的同源头。
+/// 浏览器发起的同源 fetch/XHR 一定带 Referer/Origin，Dio 默认不发，
+/// 这正是之前被 CF 判为机器人（403 challenge）的直接原因。
+class _BrowserHeaderInterceptor extends Interceptor {
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    final String origin = "${options.uri.scheme}://${options.uri.host}";
+    options.headers.putIfAbsent("Referer", () => "$origin/");
+    options.headers.putIfAbsent("Origin", () => origin);
+    handler.next(options);
   }
 }
 
