@@ -6,7 +6,7 @@
 
 class CfWorkerNode {
   /// 你的 Cloudflare Worker 域名（部署 worker.js 后替换）
-  static const String relayHost = "hikari-relay.w6062598.workers.dev";
+  static const String relayHost = "dhr.kdns.fr";
 
   /// 中继节点完整 base URL
   static const String relayUrl = "https://$relayHost";
