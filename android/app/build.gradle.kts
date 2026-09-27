@@ -45,20 +45,3 @@ flutter {
     source = "../.."
 }
 apply(from = "signing-config.gradle")
-
-// 强制使用 embedded Cronet（内置 Chromium 网络栈，无需 Google Play 服务）。
-//
-// 背景：cronet_http 默认依赖 play-services-cronet，真正的网络栈由 GMS Core 提供，
-// 无 GMS 的设备上 Cronet 不可用 → NativeAdapter 回退到 dart:io(BoringSSL)，
-// TLS/HTTP2 指纹与 Chromium 不一致，Cloudflare 依旧拦截。
-// 这里直接锁定 cronet-embedded，使所有设备（含国产无 GMS 机型）都使用内置 Chromium 指纹。
-// 注意：dart-define 方式不可靠（插件子工程读不到 project.property('dart-defines')），
-// 实测走 dart-define 时产物 APK 内无 libcronet*.so，故改为在 app 模块显式声明。
-dependencies {
-    implementation("org.chromium.net:cronet-embedded:143.7445.0")
-}
-
-// 与 embedded 版提供重复的 org.chromium.net 类，必须排除其中一个
-configurations.configureEach {
-    exclude(group = "com.google.android.gms", module = "play-services-cronet")
-}
