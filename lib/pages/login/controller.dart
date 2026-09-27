@@ -51,6 +51,9 @@ class LoginController extends GetxController {
       if (hasCookie) {
         String cookie = "jieqiUserInfo=${getCookie.firstWhere((cookieItem) => cookieItem.name == "jieqiUserInfo").value};";
         cookie += "jieqiVisitInfo=${getCookie.firstWhere((cookieItem) => cookieItem.name == "jieqiVisitInfo").value}";
+        // CF 节点：cf_clearance 一并持久化，否则 Dio 的 API 请求不带它，必被 CF 拦截
+        final cfClearance = getCookie.where((c) => c.name == "cf_clearance");
+        if (cfClearance.isNotEmpty) cookie += ";cf_clearance=${cfClearance.first.value}";
         LocalStorageService.instance.setCookie(cookie);
         ApiService.instance.initCookie();
 
