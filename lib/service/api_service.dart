@@ -333,16 +333,29 @@ class _ApiClient {
     }
   }
 
+  /// 手动跟随 3xx 跳转（Dio 配了 followRedirects: false，必须自己处理）。
+  /// - 站点会 301 到 www.wenku8.net：www.wenku8.cc 并不是镜像，只是一个 301 跳转壳，
+  ///   所以 Location 可能是绝对地址，必须直接使用，绝不能拿它拼当前节点；
+  /// - 相对地址（如 login.php?jumpurl=...）才拼当前节点；
+  /// - 统一把跳转目标升级为 https，避免明文请求。
   Future<dynamic> _checkRedirects(Response response) async {
-    if (response.statusCode != null && response.statusCode! >= 300 && response.statusCode! < 400) {
-      final location = response.headers.value('location');
-      if (location != null) {
+    var current = response;
+    for (var i = 0; i < 3; i++) {
+      final statusCode = current.statusCode;
+      if (statusCode == null || statusCode < 300 || statusCode >= 400) return current.data;
+      final location = current.headers.value('location');
+      if (location == null || location.isEmpty) return current.data;
+
+      final Uri next;
+      if (location.startsWith('http')) {
+        next = Uri.parse(location).replace(scheme: 'https');
+      } else {
         final node = LocalStorageService.instance.getWenku8Node();
-        final redirectedResponse = await dio.get("${node.node}/$location");
-        return redirectedResponse.data;
+        next = Uri.parse("${node.node}/${location.replaceFirst(RegExp(r'^/+'), '')}");
       }
+      current = await dio.getUri(next);
     }
-    return response.data;
+    return current.data;
   }
 
   Future<Resource> postForm(String url, {required Object? data, required CharsetType charsetType}) async {
