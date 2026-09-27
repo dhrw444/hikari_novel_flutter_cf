@@ -9,6 +9,7 @@ import 'package:get/get.dart';
 import 'package:hikari_novel_flutter/common/app_translations.dart';
 import 'package:hikari_novel_flutter/common/constants.dart';
 import 'package:hikari_novel_flutter/common/util.dart';
+import 'package:hikari_novel_flutter/models/common/cf_worker_node.dart';
 import 'package:hikari_novel_flutter/service/api_service.dart';
 import 'package:hikari_novel_flutter/service/chapter_downloader_service.dart';
 import 'package:hikari_novel_flutter/router/app_pages.dart';
@@ -45,6 +46,7 @@ void main() async {
 
   _init();
   await Jiffy.setLocale(Util.getCurrentLocale().toString());
+  CfWorkerNode.relayHost = LocalStorageService.instance.getRelayHost(); //注入自定义中继域名
   ApiService.instance.initCookie(); //初始化cookie
 
   FlutterNativeSplash.remove();

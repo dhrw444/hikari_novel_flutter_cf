@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hikari_novel_flutter/models/common/language.dart';
+import 'package:hikari_novel_flutter/models/common/cf_worker_node.dart';
 import 'package:hikari_novel_flutter/models/common/wenku8_node.dart';
 
 import '../../service/local_storage_service.dart';
@@ -46,6 +47,14 @@ class SettingController extends GetxController {
   void changeWenku8Node(Wenku8Node n) {
     wenku8Node.value = n;
     LocalStorageService.instance.setWenku8Node(n);
+  }
+
+  void changeRelayHost(String host) {
+    host = host.trim().replaceAll(RegExp(r'^https?://'), '').replaceAll(RegExp(r'/.*$'), '');
+    if (host.isEmpty) host = CfWorkerNode.defaultRelayHost;
+    CfWorkerNode.relayHost = host;
+    LocalStorageService.instance.setRelayHost(host);
+    wenku8Node.refresh(); //触发节点设置项副标题刷新
   }
 
   void changeCustomColor(Color color) {

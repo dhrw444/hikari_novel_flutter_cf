@@ -103,6 +103,15 @@ class SettingPage extends StatelessWidget {
                   }),
             );
           }),
+          Obx(() {
+            if (controller.wenku8Node.value != Wenku8Node.cfWorker) return const SizedBox.shrink();
+            return NormalTile(
+              title: "中继节点域名",
+              subtitle: CfWorkerNode.relayHost,
+              leading: const Icon(Icons.dns_outlined),
+              onTap: () => _buildRelayHostDialog(context),
+            );
+          }),
           Obx(
             () => SwitchTile(
               title: "relative_time".tr,
@@ -126,6 +135,27 @@ class SettingPage extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  void _buildRelayHostDialog(BuildContext context) async {
+    final textController = TextEditingController(text: CfWorkerNode.relayHost);
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("中继节点域名"),
+        content: TextField(
+          controller: textController,
+          autofocus: true,
+          decoration: const InputDecoration(hintText: "例如 your-app.deno.dev", helperText: "填你自己部署的中继域名，不要带 https://"),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: Text("cancel".tr)),
+          TextButton(onPressed: () => Navigator.pop(context, textController.text), child: Text("save".tr)),
+        ],
+      ),
+    );
+    if (result == null) return;
+    controller.changeRelayHost(result);
   }
 
   void _buildColorPickerDialog(BuildContext context) async {
